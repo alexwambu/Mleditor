@@ -9,9 +9,5 @@ python-dotenv==1.0.0
 python-multipart==0.0.6
 pillow==10.0.0
 python-3.10.14
-# Install Python 3.10 (Linux example)
-sudo apt install python3.10 python3.10-venv
 
-# Create and activate a clean virtual environment
-python3.10 -m venv venv
-source venv/bin/activate
+
