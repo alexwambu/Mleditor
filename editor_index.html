@@ -1,0 +1,119 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Chatbot Builder & Eth Deployer</title>
+  <style>body{font-family:Arial;margin:20px}input,textarea{width:100%;padding:8px;margin:6px 0}button{padding:8px 12px}</style>
+</head>
+<body>
+  <h1>Chatbot Builder & Ethereum Deployer</h1>
+
+  <section>
+    <h2>Create bot</h2>
+    <input id="botName" placeholder="bot-name"/>
+    <textarea id="persona">You are a helpful assistant.</textarea>
+    <button onclick="createBot()">Create & Save</button>
+    <pre id="createResp"></pre>
+  </section>
+
+  <section>
+    <h2>Deploy bot</h2>
+    <input id="deployName" placeholder="bot-name"/>
+    <button onclick="deployBot()">Deploy</button>
+    <pre id="deployResp"></pre>
+  </section>
+
+  <section>
+    <h2>Chat (text)</h2>
+    <input id="chatBot" placeholder="bot-name"/>
+    <textarea id="chatMsg"></textarea>
+    <button onclick="sendChat()">Send</button>
+    <pre id="chatResp"></pre>
+  </section>
+
+  <section>
+    <h2>Chat (with image)</h2>
+    <input id="imgBot" placeholder="bot-name"/>
+    <input type="file" id="imgFile"/>
+    <textarea id="imgMsg">Describe the image...</textarea>
+    <button onclick="sendImageChat()">Send Image Chat</button>
+    <pre id="imgResp"></pre>
+  </section>
+
+  <section>
+    <h2>Deploy ERC-20 Token</h2>
+    <input id="tokenName" placeholder="Token name"/>
+    <input id="tokenSymbol" placeholder="Symbol"/>
+    <input id="tokenDecimals" placeholder="Decimals (18)" value="18"/>
+    <input id="tokenSupply" placeholder="Total supply (in wei units)"/>
+    <button onclick="deployToken()">Deploy Token</button>
+    <pre id="tokenResp"></pre>
+  </section>
+
+  <section>
+    <h2>Generate Genesis</h2>
+    <input id="genSigner" placeholder="Signer address (0x...)"/>
+    <button onclick="genesis()">Generate & Save</button>
+    <pre id="genResp"></pre>
+  </section>
+
+  <section>
+    <h2>Provision Cluster</h2>
+    <input id="numNodes" type="number" value="3"/>
+    <button onclick="provision()">Provision Multi-node Cluster</button>
+    <pre id="provResp"></pre>
+  </section>
+
+  <script>
+    async function api(path, opts){ const r=await fetch(path, opts); return await r.json(); }
+
+    async function createBot(){
+      const name=document.getElementById('botName').value;
+      const persona=document.getElementById('persona').value;
+      const res=await api('/create_bot',{method:'POST',body:new URLSearchParams({name, persona})});
+      document.getElementById('createResp').innerText=JSON.stringify(res,null,2);
+    }
+    async function deployBot(){
+      const name=document.getElementById('deployName').value;
+      const res=await fetch('/deploy_bot',{method:'POST',body:new URLSearchParams({name})});
+      document.getElementById('deployResp').innerText=JSON.stringify(await res.json(),null,2);
+    }
+    async function sendChat(){
+      const name=document.getElementById('chatBot').value, msg=document.getElementById('chatMsg').value;
+      const res=await fetch(`/bot/${name}/chat`,{method:'POST',body:new URLSearchParams({message:msg})});
+      document.getElementById('chatResp').innerText=JSON.stringify(await res.json(),null,2);
+    }
+    async function sendImageChat(){
+      const name=document.getElementById('imgBot').value;
+      const file=document.getElementById('imgFile').files[0];
+      const msg=document.getElementById('imgMsg').value;
+      if(!file) return alert('choose file');
+      const form=new FormData();
+      form.append('message', msg);
+      form.append('image', file);
+      const res=await fetch(`/bot/${name}/chat_with_image`,{method:'POST',body:form});
+      document.getElementById('imgResp').innerText=JSON.stringify(await res.json(),null,2);
+    }
+    async function deployToken(){
+      const name=document.getElementById('tokenName').value;
+      const symbol=document.getElementById('tokenSymbol').value;
+      const decimals=document.getElementById('tokenDecimals').value;
+      const total=document.getElementById('tokenSupply').value;
+      const form=new URLSearchParams({name, symbol, decimals, total_supply: total});
+      const res=await fetch('/deploy_token',{method:'POST',body:form});
+      document.getElementById('tokenResp').innerText=JSON.stringify(await res.json(),null,2);
+    }
+    async function genesis(){
+      const signer=document.getElementById('genSigner').value;
+      const form=new URLSearchParams({signer});
+      const res=await fetch('/generate_genesis',{method:'POST',body:form});
+      document.getElementById('genResp').innerText=JSON.stringify(await res.json(),null,2);
+    }
+    async function provision(){
+      const n=document.getElementById('numNodes').value;
+      const res=await fetch('/provision_cluster',{method:'POST',body:new URLSearchParams({num_nodes:n})});
+      document.getElementById('provResp').innerText=JSON.stringify(await res.json(),null,2);
+    }
+  </script>
+</body>
+</html>
