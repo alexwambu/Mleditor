@@ -28,5 +28,10 @@ aiofiles==23.2.1
 # --- Security & hashing ---
 cryptography==43.0.1
 
+shutilwhich==1.1.0
 
+transformers==4.44.2
+
+
+torch>=2.0.0
 
